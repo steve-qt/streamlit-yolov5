@@ -39,7 +39,7 @@ def image_input(data_src):
 def video_input(data_src):
     vid_file = None
     if data_src == 'Sample data':
-        vid_file = "data/sample_videos/switch2.mov"
+        vid_file = "data/sample_videos/3sectrafficcam.mp4"
     else:
         vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'])
         if vid_bytes:
@@ -140,7 +140,7 @@ def main():
     # global variables
     global model, confidence, cfg_model_path
 
-    st.title("Switch Detector")
+    st.title("People Detector")
 
     st.sidebar.title("Settings")
 

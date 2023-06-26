@@ -140,7 +140,7 @@ def main():
     # global variables
     global model, confidence, cfg_model_path
 
-    st.title("Switch Detector")
+    st.title("Vehicle Detector")
 
     st.sidebar.title("Settings")
 
