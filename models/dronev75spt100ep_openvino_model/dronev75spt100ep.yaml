@@ -1,0 +1,32 @@
+stride: 32
+names:
+  0: bus_black
+  1: bus_blue
+  2: bus_green
+  3: bus_orange
+  4: bus_red
+  5: bus_white
+  6: bus_yellow
+  7: car_black
+  8: car_blue
+  9: car_gray
+  10: car_green
+  11: car_orange
+  12: car_purple
+  13: car_red
+  14: car_white
+  15: car_yellow
+  16: person
+  17: truck_black
+  18: truck_blue
+  19: truck_gray
+  20: truck_green
+  21: truck_orange
+  22: truck_red
+  23: truck_white
+  24: truck_yellow
+  25: van_black
+  26: van_blue
+  27: van_gray
+  28: van_red
+  29: van_white

@@ -9,9 +9,9 @@ import time
 import numpy as np
 st.set_page_config(layout="wide")
 
-cfg_model_path = 'models/helmet-5s.onnx'
+cfg_model_path = 'models/helmet_openvino_model/'
 model = None
-confidence = .70
+confidence = .5
 
 
 def image_input(data_src):
@@ -39,7 +39,7 @@ def image_input(data_src):
 def video_input(data_src):
     vid_file = None
     if data_src == 'Sample data':
-        vid_file = "data/sample_videos/helmet2.mp4"
+        vid_file = "data/sample_videos/helmet3_480.mp4"
     else:
         vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'])
         if vid_bytes:
@@ -96,7 +96,7 @@ def infer_image(im, size=None):
     model.iou = 0.65
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
-    model.size = 640
+    model.size = 416
     result = model(im, size=size) if size else model(im)
     result.render()
     image = Image.fromarray(result.ims[0])
@@ -170,7 +170,7 @@ def main():
     model = load_model(cfg_model_path, device_option)
 
     # confidence slider
-    confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.7)
+    confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.5)
 
     # custom classes
     if st.sidebar.checkbox("Custom Classes"):
