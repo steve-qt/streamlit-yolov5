@@ -9,7 +9,7 @@ import time
 import numpy as np
 st.set_page_config(layout="wide")
 
-cfg_model_path = 'models/weaponv85spt100ep_openvino_model/'
+cfg_model_path = 'models/weaponv155spt100ep_openvino_model/'
 model = None
 confidence = .25
 
