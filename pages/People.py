@@ -93,6 +93,7 @@ def video_input(data_src):
 
 def infer_image(im, size=None):
     model.conf = confidence
+    model.classes = 16
     model.iou = 0.65
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
@@ -172,14 +173,14 @@ def main():
     # confidence slider
     confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
 
-    # custom classes
-    if st.sidebar.checkbox("Custom Classes"):
-        model_names = list(model.names.values())
-        assigned_class = st.sidebar.multiselect("Select Classes", model_names, default=[model_names[0]])
-        classes = [model_names.index(name) for name in assigned_class]
-        model.classes = classes
-    else:
-        model.classes = list(model.names.keys())
+    # # custom classes
+    # if st.sidebar.checkbox("Custom Classes"):
+    #     model_names = list(model.names.values())
+    #     assigned_class = st.sidebar.multiselect("Select Classes", model_names, default=[model_names[0]])
+    #     classes = [model_names.index(name) for name in assigned_class]
+    #     model.classes = classes
+    # else:
+    #     model.classes = list(model.names.keys())
 
     st.sidebar.markdown("---")
 

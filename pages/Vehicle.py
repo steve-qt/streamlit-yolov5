@@ -93,6 +93,7 @@ def video_input(data_src):
 
 def infer_image(im, size=None):
     model.conf = confidence
+    model.classes = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
     model.iou = 0.65
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
@@ -175,6 +176,8 @@ def main():
     # custom classes
     if st.sidebar.checkbox("Custom Classes"):
         model_names = list(model.names.values())
+        #exclude person
+        model_names = [name for name in model_names if name != "person"]
         assigned_class = st.sidebar.multiselect("Select Classes", model_names, default=[model_names[0]])
         classes = [model_names.index(name) for name in assigned_class]
         model.classes = classes
