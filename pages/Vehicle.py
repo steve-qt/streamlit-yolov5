@@ -12,6 +12,9 @@ st.set_page_config(layout="wide")
 cfg_model_path = 'models/dronev75spt100ep_openvino_model/'
 model = None
 confidence = .25
+video_type = None
+video_src = None
+user_input = None
 
 
 def image_input(data_src):
@@ -38,17 +41,27 @@ def image_input(data_src):
 
 def video_input(data_src):
     vid_file = None
-    if data_src == 'Sample data':
+    if data_src == 'Live data':
+        vid_file = "livewebcam"
+    elif data_src == 'Sample data':
         vid_file = "data/sample_videos/3secdronestream.mp4"
-    else:
+    elif data_src == 'Upload data':
         vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'])
         if vid_bytes:
-            vid_file = "data/uploaded_data/upload." + vid_bytes.name.split('.')[-1]
+            vid_file = vid_bytes.name.split('.')[-1]
             with open(vid_file, 'wb') as out:
                 out.write(vid_bytes.read())
+    elif data_src == 'Rtsp data':
+        vid_file = user_input
+        st.write("You entered: ", user_input)
+    
+    # video_src = vid_file
 
     if vid_file:
+        if vid_file == "livewebcam":
+            vid_file = 0 #default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
         cap = cv2.VideoCapture(vid_file)
+        video_src = cap
         custom_size = st.sidebar.checkbox("Custom frame size")
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -94,6 +107,7 @@ def video_input(data_src):
 def infer_image(im, size=None):
     model.conf = confidence
     model.classes = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
+    model.source = video_src
     model.iou = 0.65
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
@@ -139,7 +153,7 @@ def get_user_model():
 
 def main():
     # global variables
-    global model, confidence, cfg_model_path
+    global model, confidence, cfg_model_path, video_src, user_input
 
     st.title("Vehicle Detector")
 
@@ -184,6 +198,21 @@ def main():
     else:
         model.classes = list(model.names.keys())
 
+    # vid src option slider
+    video_type = st.sidebar.radio("Choose your video type", ["Sample data", "Upload a video", "Rtsp", "Live webcam"])
+
+    if video_type == "Live webcam":
+        video_input('Live data')
+    elif video_type == "Sample data":
+        video_input('Sample data')
+    elif video_type == "Upload a video":
+        video_input('Upload data')
+    elif video_type == "Rtsp":
+        user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
+        # video_src = user_input
+        if user_input:
+            video_input('Rtsp data')
+
     st.sidebar.markdown("---")
 
     # # input options
@@ -197,7 +226,7 @@ def main():
     # else:
     #     video_input(data_src)
 
-    video_input('Sample data')
+    #video_input('Sample data')
 
 if __name__ == "__main__":
     try:
