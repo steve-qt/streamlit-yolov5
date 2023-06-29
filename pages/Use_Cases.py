@@ -101,7 +101,7 @@ def video_input(data_src, data_path, key):
         cap.release()
 
 
-def infer_image(im, size=None):
+def infer_image(data_path, im, size=None):
     model.conf = confidence
     model.source = video_src
     model.iou = 0.65
@@ -161,7 +161,7 @@ def main():
     # else:
     #     device_option = st.sidebar.radio("Select Device", ['cpu', 'cuda'], disabled=True, index=0)
 
-    with st.expander("Person Detection"):
+    with st.expander("Traffic Detection"):
         # load model
         model = load_model(cfg_vehicle_person_model_path, None)
 
@@ -253,28 +253,28 @@ def main():
         # confidence slider
         confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_26")
 
-    with st.expander("Vehicle Detection"):
-        # load model
-        model = load_model(cfg_safety_model_path, None)
+    # with st.expander("Vehicle Detection"):
+    #     # load model
+    #     model = load_model(cfg_safety_model_path, None)
 
-        # vid src option slider
-        #with st.sidebar:
-        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_19") #"Sample data", 
+    #     # vid src option slider
+    #     #with st.sidebar:
+    #     video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_19") #"Sample data", 
 
-        if video_type == "Live webcam":
-            video_input('Live data', cfg_vehicle_person_model_path, key="key_20")
-        # elif video_type == "Sample data":
-        #     video_input('Sample data')
-        elif video_type == "Upload a video":
-            video_input('Upload data', cfg_vehicle_person_model_path, key="key_21")
-        elif video_type == "Rtsp":
-            user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
-            # video_src = user_input
-            if user_input:
-                video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_22")
+    #     if video_type == "Live webcam":
+    #         video_input('Live data', cfg_vehicle_person_model_path, key="key_20")
+    #     # elif video_type == "Sample data":
+    #     #     video_input('Sample data')
+    #     elif video_type == "Upload a video":
+    #         video_input('Upload data', cfg_vehicle_person_model_path, key="key_21")
+    #     elif video_type == "Rtsp":
+    #         user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
+    #         # video_src = user_input
+    #         if user_input:
+    #             video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_22")
 
-        # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_27")
+    #     # confidence slider
+    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_27")
 
     #st.sidebar.markdown("---")
 
