@@ -7,6 +7,11 @@ import cv2
 import os
 import time
 import numpy as np
+import torchvision
+from torchvision.io import read_image
+from torchvision.utils import draw_bounding_boxes
+import torchvision.transforms as transforms
+
 st.set_page_config(layout="wide")
 
 cfg_model_path = 'models/helmet_openvino_model/'
@@ -105,15 +110,38 @@ def video_input(data_src):
 
 def infer_image(im, size=None):
     model.conf = confidence
-    model.source = video_src
     model.iou = 0.65
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
-    model.size = 416
+    model.size = 300
     result = model(im, size=size) if size else model(im)
-    result.render()
-    image = Image.fromarray(result.ims[0])
-    return image
+    box_arr = []
+    colors = []
+    labels = []
+    for index, row in result.pandas().xyxy[0].iterrows():
+        # print(row['xmin'], row['ymin'], row['xmax'], row['ymax'], row['confidence'])
+        x1 = int(row['xmin'])
+        y1 = int(row['ymin'])
+        x2 = int(row['xmax'])
+        y2 = int(row['ymax'])
+        box_arr.append([x1, y1, x2, y2])
+        label = int(row['class'])
+
+        if label == 0:
+            colors.append("red")
+            labels.append("no helmet")
+        else:
+            colors.append("blue")
+            labels.append("helmet")
+
+    image = Image.fromarray(im)
+    transform = transforms.Compose([transforms.PILToTensor()])
+    transformed_img = transform(image)
+
+    boxes = torch.tensor(box_arr, dtype=torch.float)
+    img_w_box = draw_bounding_boxes(transformed_img, boxes, colors=colors, labels=labels, width=5)
+    img_w_box = torchvision.transforms.ToPILImage()(img_w_box)
+    return img_w_box
 
 
 @st.experimental_singleton
