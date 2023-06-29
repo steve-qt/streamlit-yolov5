@@ -59,7 +59,9 @@ def video_input(data_src, data_path, key):
             vid_file = 0 #default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
         cap = cv2.VideoCapture(vid_file)
         video_src = cap
-        custom_size = st.sidebar.checkbox("Custom frame size", key=key)
+        custom_size = st.checkbox("Custom frame size", key=key)
+        # confidence slider
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         if custom_size:
@@ -101,7 +103,7 @@ def video_input(data_src, data_path, key):
         cap.release()
 
 
-def infer_image(data_path, im, size=None):
+def infer_image(im, size=None):
     model.conf = confidence
     model.source = video_src
     model.iou = 0.65
@@ -161,7 +163,7 @@ def main():
     # else:
     #     device_option = st.sidebar.radio("Select Device", ['cpu', 'cuda'], disabled=True, index=0)
 
-    with st.expander("Traffic Detection"):
+    with st.expander("Traffic Detection"): #with st.expander("Person Detection"):
         # load model
         model = load_model(cfg_vehicle_person_model_path, None)
 
@@ -176,13 +178,13 @@ def main():
         elif video_type == "Upload a video":
             video_input('Upload data', cfg_vehicle_person_model_path, key="key_5")
         elif video_type == "Rtsp":
-            user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_30")
             # video_src = user_input
             if user_input:
                 video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_6")
         
         # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_23")
+        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_23")
 
     with st.expander("Safety Detection"):
         # load model
@@ -199,13 +201,13 @@ def main():
         elif video_type == "Upload a video":
             video_input('Upload data', cfg_vehicle_person_model_path, key="key_9")
         elif video_type == "Rtsp":
-            user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_29")
             # video_src = user_input
             if user_input:
                 video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_10")
                 
         # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_24")
+        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_24")
     
     with st.expander("Switch Detection"):
         # load model
@@ -222,13 +224,13 @@ def main():
         elif video_type == "Upload a video":
             video_input('Upload data', cfg_switch_model_path, key="key_13")
         elif video_type == "Rtsp":
-            user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_28")
             # video_src = user_input
             if user_input:
                 video_input('Rtsp data', cfg_switch_model_path, key="key_14")
     
         # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_25")
+        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_25")
 
     with st.expander("Weapon Detection"):
         # load model
@@ -245,13 +247,13 @@ def main():
         elif video_type == "Upload a video":
             video_input('Upload data', cfg_weapon_model_path, key="key_17")
         elif video_type == "Rtsp":
-            user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_27")
             # video_src = user_input
             if user_input:
                 video_input('Rtsp data', cfg_weapon_model_path, key="key_18")
         
         # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_26")
+        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_26")
 
     # with st.expander("Vehicle Detection"):
     #     # load model
@@ -268,13 +270,13 @@ def main():
     #     elif video_type == "Upload a video":
     #         video_input('Upload data', cfg_vehicle_person_model_path, key="key_21")
     #     elif video_type == "Rtsp":
-    #         user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
+    #         user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_31")
     #         # video_src = user_input
     #         if user_input:
     #             video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_22")
 
     #     # confidence slider
-    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_27")
+    #     # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_27")
 
     #st.sidebar.markdown("---")
 
