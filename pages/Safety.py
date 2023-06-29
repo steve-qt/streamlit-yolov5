@@ -11,6 +11,8 @@ import torchvision
 from torchvision.io import read_image
 from torchvision.utils import draw_bounding_boxes
 import torchvision.transforms as transforms
+import configparser
+import ast
 
 st.set_page_config(layout="wide")
 
@@ -108,6 +110,14 @@ def video_input(data_src):
         cap.release()
 
 
+def getClassInfo(class_num):
+    config = configparser.ConfigParser()
+    config.read(".editorconfig")
+
+    label = ast.literal_eval(config['SAFETY']['labels'])[class_num]
+    color = ast.literal_eval(config['SAFETY']['colors'])[class_num]
+    return label, color
+
 def infer_image(im, size=None):
     model.conf = confidence
     model.iou = 0.65
@@ -125,14 +135,11 @@ def infer_image(im, size=None):
         x2 = int(row['xmax'])
         y2 = int(row['ymax'])
         box_arr.append([x1, y1, x2, y2])
-        label = int(row['class'])
+        class_num = int(row['class'])
 
-        if label == 0:
-            colors.append("red")
-            labels.append("no helmet")
-        else:
-            colors.append("blue")
-            labels.append("helmet")
+        label, color = getClassInfo(class_num)
+        labels.append(label)
+        colors.append(color)
 
     image = Image.fromarray(im)
     transform = transforms.Compose([transforms.PILToTensor()])
