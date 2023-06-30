@@ -5,8 +5,8 @@ CompressionLevel = 9
 ForwardX11 = yes
 
 [SAFETY]
-labels='no helmet','helmet'
-colors='red','blue'
+labels='no helmet','helmet','glass','vest'
+colors='red','blue','orange','green'
 
 [SWITCH]
 labels='PROPERLY','EMPTY','PROPERLY','EMPTY'

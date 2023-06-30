@@ -16,7 +16,7 @@ import ast
 
 st.set_page_config(layout="wide")
 
-cfg_model_path = 'models/helmet_openvino_model/'
+cfg_model_path = 'models/safety_openvino_model/'
 model = None
 confidence = .5
 video_type = None
