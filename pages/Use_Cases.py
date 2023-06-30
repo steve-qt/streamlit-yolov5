@@ -10,7 +10,7 @@ import numpy as np
 st.set_page_config(layout="wide")
 
 
-cfg_safety_model_path = 'models/helmet_openvino_model/'
+cfg_safety_model_path = 'models/safety_openvino_model/'
 cfg_weapon_model_path = 'models/weaponv155spt100ep_openvino_model/'
 cfg_vehicle_person_model_path = 'models/dronev75spt100ep_openvino_model/'
 cfg_switch_model_path = 'models/best-v4-5s_openvino_model/'
@@ -20,6 +20,22 @@ confidence = .25
 video_type = None
 video_src = None
 user_input = None
+
+st.markdown(
+        """
+        <style>
+            [data-testid="stSidebarNav"] {
+                background-image: url(https://th.bing.com/th/id/R.1117c9dcb73e4226297f7967b5adadcc?rik=W1PFQJjMCQMG6Q&riu=http%3a%2f%2f4.bp.blogspot.com%2f_Q8UtAKpUjn8%2fS6Y4fgcd26I%2fAAAAAAAACLc%2fSMDUxiAziUc%2fs320%2fhcl_logo.png&ehk=zxggoALZcXYRYKpUhmYxX0kty9iJnuGvb8cwZuDytk8%3d&risl=&pid=ImgRaw&r=0);
+                background-repeat: no-repeat;
+                padding-top: 120px;
+                background-position: 20px 20px;
+                width: 300px;
+                height: auto;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 def video_input(data_src, data_path, key):
     vid_file = None
@@ -163,29 +179,6 @@ def main():
     # else:
     #     device_option = st.sidebar.radio("Select Device", ['cpu', 'cuda'], disabled=True, index=0)
 
-    with st.expander("Traffic Detection"): #with st.expander("Person Detection"):
-        # load model
-        model = load_model(cfg_vehicle_person_model_path, None)
-
-        # vid src option slider
-        #with st.sidebar:
-        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_3") #"Sample data", 
-
-        if video_type == "Live webcam":
-            video_input('Live data', cfg_vehicle_person_model_path, key="key_4")
-        # elif video_type == "Sample data":
-        #     video_input('Sample data')
-        elif video_type == "Upload a video":
-            video_input('Upload data', cfg_vehicle_person_model_path, key="key_5")
-        elif video_type == "Rtsp":
-            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_30")
-            # video_src = user_input
-            if user_input:
-                video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_6")
-        
-        # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_23")
-
     with st.expander("Safety Detection"):
         # load model
         model = load_model(cfg_safety_model_path, None)
@@ -231,6 +224,29 @@ def main():
     
         # confidence slider
         confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_25")
+    
+    with st.expander("Traffic Detection"): #with st.expander("Person Detection"):
+        # load model
+        model = load_model(cfg_vehicle_person_model_path, None)
+
+        # vid src option slider
+        #with st.sidebar:
+        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_3") #"Sample data", 
+
+        if video_type == "Live webcam":
+            video_input('Live data', cfg_vehicle_person_model_path, key="key_4")
+        # elif video_type == "Sample data":
+        #     video_input('Sample data')
+        elif video_type == "Upload a video":
+            video_input('Upload data', cfg_vehicle_person_model_path, key="key_5")
+        elif video_type == "Rtsp":
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_30")
+            # video_src = user_input
+            if user_input:
+                video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_6")
+        
+        # confidence slider
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_23")
 
     with st.expander("Weapon Detection"):
         # load model
