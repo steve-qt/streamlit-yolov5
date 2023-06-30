@@ -61,7 +61,7 @@ def video_input(data_src, data_path, key):
         video_src = cap
         custom_size = st.checkbox("Custom frame size", key=key)
         # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
+        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         if custom_size:
@@ -184,7 +184,7 @@ def main():
                 video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_6")
         
         # confidence slider
-        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_23")
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_23")
 
     with st.expander("Safety Detection"):
         # load model
@@ -207,7 +207,7 @@ def main():
                 video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_10")
                 
         # confidence slider
-        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_24")
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_24")
     
     with st.expander("Switch Detection"):
         # load model
@@ -230,7 +230,7 @@ def main():
                 video_input('Rtsp data', cfg_switch_model_path, key="key_14")
     
         # confidence slider
-        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_25")
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_25")
 
     with st.expander("Weapon Detection"):
         # load model
@@ -253,7 +253,7 @@ def main():
                 video_input('Rtsp data', cfg_weapon_model_path, key="key_18")
         
         # confidence slider
-        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_26")
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_26")
 
     # with st.expander("Vehicle Detection"):
     #     # load model
@@ -276,7 +276,7 @@ def main():
     #             video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_22")
 
     #     # confidence slider
-    #     # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_27")
+    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_27")
 
     #st.sidebar.markdown("---")
 
