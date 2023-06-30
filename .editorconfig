@@ -1,0 +1,21 @@
+[DEFAULT]
+ServerAliveInterval = 45
+Compression = yes
+CompressionLevel = 9
+ForwardX11 = yes
+
+[SAFETY]
+labels='no helmet','helmet','glass','vest'
+colors='red','blue','orange','green'
+
+[SWITCH]
+labels='PROPERLY','EMPTY','PROPERLY','EMPTY'
+colors='blue','red','blue','red'
+
+[PERSON]
+labels='PERSON'
+colors='blue'
+
+[WEAPON]
+labels='handgun','riffle','shortgun'
+colors='blue','green','red'
