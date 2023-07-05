@@ -13,9 +13,9 @@ labels='PROPERLY','EMPTY','PROPERLY','EMPTY'
 colors='blue','red','blue','red'
 
 [PERSON]
-labels='PERSON'
+labels='person'
 colors='blue'
 
 [WEAPON]
-labels='handgun','riffle','shortgun'
+labels='handgun','rifle','shotgun'
 colors='blue','green','red'
