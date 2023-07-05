@@ -89,6 +89,8 @@ def video_input(data_src, auto_replay):
 
         fps = 0
         st1, st2, st3 = st.columns(3)
+
+        #COMMENT THIS OUT //--------------------
         with st1:
             st.markdown("## Height")
             st1_text = st.markdown(f"{height}")
@@ -98,6 +100,7 @@ def video_input(data_src, auto_replay):
         with st3:
             st.markdown("## FPS")
             st3_text = st.markdown(f"{fps}")
+        #COMMENT THIS OUT //--------------------
 
         st.markdown("---")
         output = st.empty()
@@ -126,9 +129,12 @@ def video_input(data_src, auto_replay):
             curr_time = time.time()
             fps = 1 / (curr_time - prev_time)
             prev_time = curr_time
+
+            #COMMENT THIS OUT //--------------------
             st1_text.markdown(f"**{height}**")
             st2_text.markdown(f"**{width}**")
             st3_text.markdown(f"**{fps:.2f}**")
+            #COMMENT THIS OUT //--------------------
 
         cap.release()
 
@@ -220,7 +226,7 @@ def main():
     model = load_model(cfg_model_path, device_option)
 
     # confidence slider
-    confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
+    confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.5)
 
     # custom classes
     if st.sidebar.checkbox("Custom Classes"):

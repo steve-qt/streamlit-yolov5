@@ -7,21 +7,16 @@ import cv2
 import os
 import time
 import numpy as np
-import torchvision
-from torchvision.io import read_image
-from torchvision.utils import draw_bounding_boxes
-import torchvision.transforms as transforms
-import configparser
-import ast
-
 st.set_page_config(layout="wide")
 
 cfg_model_path = 'models/safety_openvino_model/'
 model = None
-confidence = .5
+confidence = .65
 video_type = None
 video_src = None
 user_input = None
+# auto_replay = False
+# increment = 5
 
 st.markdown(
         """
@@ -38,6 +33,7 @@ st.markdown(
         """,
         unsafe_allow_html=True,
     )
+
 
 def image_input(data_src):
     img_file = None
@@ -60,12 +56,14 @@ def image_input(data_src):
             img = infer_image(img_file)
             st.image(img, caption="Model prediction")
 
+
 def video_input(data_src, auto_replay):
     vid_file = None
+
     if data_src == 'Live data':
         vid_file = "livewebcam"
     elif data_src == 'Sample data':
-        vid_file = "data/sample_videos/helmet3_480.mp4"
+        vid_file = "data/sample_videos/helmet3_480.mp4" 
     elif data_src == 'Upload data':
         vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'])
         if vid_bytes:
@@ -84,6 +82,7 @@ def video_input(data_src, auto_replay):
         cap = cv2.VideoCapture(vid_file)
         video_src = cap
         custom_size = st.sidebar.checkbox("Custom frame size")
+
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         if custom_size:
@@ -95,7 +94,9 @@ def video_input(data_src, auto_replay):
 
         fps = 0
         st1, st2, st3 = st.columns(3)
-        with st1:
+        
+        # COMMENT THIS OUT //--------------------
+        with st1: 
             st.markdown("## Height")
             st1_text = st.markdown(f"{height}")
         with st2:
@@ -104,6 +105,7 @@ def video_input(data_src, auto_replay):
         with st3:
             st.markdown("## FPS")
             st3_text = st.markdown(f"{fps}")
+        # COMMENT THIS OUT //---------------------
 
         st.markdown("---")
         output = st.empty()
@@ -132,12 +134,15 @@ def video_input(data_src, auto_replay):
             curr_time = time.time()
             fps = 1 / (curr_time - prev_time)
             prev_time = curr_time
+
+            #COMMENT THIS OUT //--------------------
             st1_text.markdown(f"**{height}**")
             st2_text.markdown(f"**{width}**")
             st3_text.markdown(f"**{fps:.2f}**")
+            #COMMENT THIS OUT //--------------------
 
         cap.release()
-        
+
         if auto_replay:
             while True:
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
@@ -146,45 +151,18 @@ def video_input(data_src, auto_replay):
                     time.sleep(1/fps)
 
 
-def getClassInfo(class_num):
-    config = configparser.ConfigParser()
-    config.read(".editorconfig")
-
-    label = ast.literal_eval(config['SAFETY']['labels'])[class_num]
-    color = ast.literal_eval(config['SAFETY']['colors'])[class_num]
-    return label, color
-
 def infer_image(im, size=None):
     model.conf = confidence
+    model.source = video_src
+    # model.classes = 16
     model.iou = 0.65
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
-    model.size = 300
+    model.size = 640
     result = model(im, size=size) if size else model(im)
-    box_arr = []
-    colors = []
-    labels = []
-    for index, row in result.pandas().xyxy[0].iterrows():
-        # print(row['xmin'], row['ymin'], row['xmax'], row['ymax'], row['confidence'])
-        x1 = int(row['xmin'])
-        y1 = int(row['ymin'])
-        x2 = int(row['xmax'])
-        y2 = int(row['ymax'])
-        box_arr.append([x1, y1, x2, y2])
-        class_num = int(row['class'])
-
-        label, color = getClassInfo(class_num)
-        labels.append(label)
-        colors.append(color)
-
-    image = Image.fromarray(im)
-    transform = transforms.Compose([transforms.PILToTensor()])
-    transformed_img = transform(image)
-
-    boxes = torch.tensor(box_arr, dtype=torch.float)
-    img_w_box = draw_bounding_boxes(transformed_img, boxes, colors=colors, labels=labels, width=5)
-    img_w_box = torchvision.transforms.ToPILImage()(img_w_box)
-    return img_w_box
+    result.render()
+    image = Image.fromarray(result.ims[0])
+    return image
 
 
 @st.cache_resource
@@ -222,9 +200,9 @@ def get_user_model():
 
 def main():
     # global variables
-    global model, confidence, cfg_model_path, video_src, user_input
+    global model, confidence, cfg_model_path, video_type, video_src, user_input
 
-    st.title("Safety Detector")
+    st.title("Traffic Detector")
 
     st.sidebar.title("Settings")
 
@@ -254,7 +232,7 @@ def main():
     model = load_model(cfg_model_path, device_option)
 
     # confidence slider
-    confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.5)
+    confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.65)
 
     # custom classes
     if st.sidebar.checkbox("Custom Classes"):
@@ -269,16 +247,16 @@ def main():
     video_type = st.sidebar.radio("Choose your video type", ["Sample data", "Upload a video", "Rtsp", "Live webcam"])
 
     if video_type == "Live webcam":
-        video_input('Live data', False)
+        video_input('Live data', False) 
     elif video_type == "Sample data":
-        video_input('Sample data', True)
+        video_input('Sample data', True) 
     elif video_type == "Upload a video":
-        video_input('Upload data', True)
+        video_input('Upload data', True) 
     elif video_type == "Rtsp":
         user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
         # video_src = user_input
         if user_input:
-            video_input('Rtsp data', False)
+            video_input('Rtsp data', False) 
 
     st.sidebar.markdown("---")
 
