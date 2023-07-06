@@ -202,7 +202,7 @@ def main():
     # global variables
     global model, confidence, cfg_model_path, video_type, video_src, user_input
 
-    st.title("Traffic Detector")
+    st.title("Safety Detector")
 
     st.sidebar.title("Settings")
 
