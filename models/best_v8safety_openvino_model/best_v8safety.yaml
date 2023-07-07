@@ -1,0 +1,8 @@
+stride: 32
+names:
+  0: glasses
+  1: helmet
+  2: no-glasses
+  3: no-helmet
+  4: no-vest
+  5: vest

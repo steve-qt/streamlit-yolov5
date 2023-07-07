@@ -29,9 +29,19 @@ st.markdown(
 
 st.markdown(
     """
-    Streamlit is an open-source app framework built specifically for
-    Machine Learning and Data Science projects.
     ### TEAM MEMBERS
         Chase Dannen, Patrick Harris & Steven Luong
+
+    ### LATEST UPDATES
+        - New Pages:
+            Coaxial Cable
+            Intrusion
+            Multiple Models
+        - New Models:
+            Coaxial Cable
+            Safety [no vest, no glasses, and no helmet added to the dataset]
+        - New Features: 
+            Auto replay for sample and uploaded videos
+            Hide confidence
 """
 )
