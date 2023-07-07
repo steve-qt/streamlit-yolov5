@@ -7,11 +7,19 @@ import cv2
 import os
 import time
 import numpy as np
+import torchvision
+from torchvision.io import read_image
+from torchvision.utils import draw_bounding_boxes
+import torchvision.transforms as transforms
+import configparser
+import ast
+
 st.set_page_config(layout="wide")
 
+cfg_model_label = 'COAXIAL'
 cfg_model_path = 'models/coxial_openvino_model/'
 model = None
-confidence = .3
+confidence = .4
 video_type = None
 video_src = None
 user_input = None
@@ -19,7 +27,7 @@ user_input = None
 # increment = 5
 
 st.markdown(
-        """
+    """
         <style>
             [data-testid="stSidebarNav"] {
                 background-image: url(https://th.bing.com/th/id/R.1117c9dcb73e4226297f7967b5adadcc?rik=W1PFQJjMCQMG6Q&riu=http%3a%2f%2f4.bp.blogspot.com%2f_Q8UtAKpUjn8%2fS6Y4fgcd26I%2fAAAAAAAACLc%2fSMDUxiAziUc%2fs320%2fhcl_logo.png&ehk=zxggoALZcXYRYKpUhmYxX0kty9iJnuGvb8cwZuDytk8%3d&risl=&pid=ImgRaw&r=0);
@@ -31,8 +39,8 @@ st.markdown(
             }
         </style>
         """,
-        unsafe_allow_html=True,
-    )
+    unsafe_allow_html=True,
+)
 
 
 def image_input(data_src):
@@ -73,12 +81,12 @@ def video_input(data_src, auto_replay):
     elif data_src == 'Rtsp data':
         vid_file = user_input
         st.write("You entered: ", user_input)
-    
+
     # video_src = vid_file
 
     if vid_file:
         if vid_file == "livewebcam":
-            vid_file = 0 #default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
+            vid_file = 0  # default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
         cap = cv2.VideoCapture(vid_file)
         video_src = cap
         custom_size = st.sidebar.checkbox("Custom frame size")
@@ -94,9 +102,9 @@ def video_input(data_src, auto_replay):
 
         fps = 0
         st1, st2, st3 = st.columns(3)
-        
+
         # COMMENT THIS OUT //--------------------
-        with st1: 
+        with st1:
             st.markdown("## Height")
             st1_text = st.markdown(f"{height}")
         with st2:
@@ -135,11 +143,11 @@ def video_input(data_src, auto_replay):
             fps = 1 / (curr_time - prev_time)
             prev_time = curr_time
 
-            #COMMENT THIS OUT //--------------------
+            # COMMENT THIS OUT //--------------------
             st1_text.markdown(f"**{height}**")
             st2_text.markdown(f"**{width}**")
             st3_text.markdown(f"**{fps:.2f}**")
-            #COMMENT THIS OUT //--------------------
+            # COMMENT THIS OUT //--------------------
 
         cap.release()
 
@@ -148,21 +156,50 @@ def video_input(data_src, auto_replay):
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 for frame in frames:
                     output.image(frame)
-                    time.sleep(1/fps)
+                    time.sleep(1 / fps)
+
+
+def getClassInfo(class_num):
+    config = configparser.ConfigParser()
+    config.read(".editorconfig")
+    label = ast.literal_eval(config[cfg_model_label]['labels'])[class_num]
+    color = ast.literal_eval(config[cfg_model_label]['colors'])[class_num]
+    return label, color
 
 
 def infer_image(im, size=None):
-    #model.conf = confidence
+    model.conf = confidence
     model.source = video_src
-    # model.classes = 16
     model.iou = 0.65
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
     model.size = 640
+
     result = model(im, size=size) if size else model(im)
-    result.render()
-    image = Image.fromarray(result.ims[0])
-    return image
+    box_arr = []
+    colors = []
+    labels = []
+    for index, row in result.pandas().xyxy[0].iterrows():
+        # print(row['xmin'], row['ymin'], row['xmax'], row['ymax'], row['confidence'])
+        x1 = int(row['xmin'])
+        y1 = int(row['ymin'])
+        x2 = int(row['xmax'])
+        y2 = int(row['ymax'])
+        box_arr.append([x1, y1, x2, y2])
+
+        class_num = int(row['class'])
+        label, color = getClassInfo(class_num)
+        labels.append(label)
+        colors.append(color)
+
+    image = Image.fromarray(im)
+    transform = transforms.Compose([transforms.PILToTensor()])
+    transformed_img = transform(image)
+    boxes = torch.tensor(box_arr, dtype=torch.float)
+
+    img_w_box = draw_bounding_boxes(transformed_img, boxes, colors=colors, labels=labels, width=5)
+    img_w_box = torchvision.transforms.ToPILImage()(img_w_box)
+    return img_w_box
 
 
 @st.cache_resource
@@ -198,6 +235,7 @@ def get_user_model():
 
     return model_file
 
+
 def main():
     # global variables
     global model, confidence, cfg_model_path, video_type, video_src, user_input
@@ -219,8 +257,8 @@ def main():
 
     # check if model file is available
     # if not os.path.isfile(cfg_model_path):
-        # st.warning(cfg_model_path)
-        # st.warning("Model file not available!!!, please added to the model folder.", icon="⚠️")
+    # st.warning(cfg_model_path)
+    # st.warning("Model file not available!!!, please added to the model folder.", icon="⚠️")
 
     # device options
     if torch.cuda.is_available():
@@ -232,7 +270,7 @@ def main():
     model = load_model(cfg_model_path, device_option)
 
     # confidence slider
-    confidence = st.sidebar.slider('Confidence', min_value=0.1, max_value=1.0, value=.1)
+    confidence = st.sidebar.slider('Confidence', min_value=0.4, max_value=1.0, value=.1)
 
     # custom classes
     if st.sidebar.checkbox("Custom Classes"):
@@ -247,16 +285,16 @@ def main():
     video_type = st.sidebar.radio("Choose your video type", ["Sample data", "Upload a video", "Rtsp", "Live webcam"])
 
     if video_type == "Live webcam":
-        video_input('Live data', False) 
+        video_input('Live data', False)
     elif video_type == "Sample data":
-        video_input('Sample data', True) 
+        video_input('Sample data', True)
     elif video_type == "Upload a video":
-        video_input('Upload data', True) 
+        video_input('Upload data', True)
     elif video_type == "Rtsp":
         user_input = st.sidebar.text_input("Enter the rtsp address ( rtsp://address )")
         # video_src = user_input
         if user_input:
-            video_input('Rtsp data', False) 
+            video_input('Rtsp data', False)
 
     st.sidebar.markdown("---")
 
@@ -272,6 +310,7 @@ def main():
     #     video_input(data_src)
 
     # video_input('Sample data')
+
 
 if __name__ == "__main__":
     try:

@@ -19,3 +19,7 @@ colors='blue'
 [WEAPON]
 labels='handgun','rifle','shotgun'
 colors='blue','green','red'
+
+[COAXIAL]
+labels='CONNECTED','DISCONNECTED'
+colors='blue','red'
