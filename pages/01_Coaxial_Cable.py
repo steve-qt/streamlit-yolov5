@@ -197,12 +197,19 @@ def infer_image(im, size=None):
     transformed_img = transform(image)
     boxes = torch.tensor(box_arr, dtype=torch.float)
 
-    img_w_box = draw_bounding_boxes(transformed_img, boxes, colors=colors, labels=labels, width=5)
+    img_w_box = draw_bounding_boxes(transformed_img,
+                                    boxes,
+                                    colors=colors,
+                                    labels=labels,
+                                    font='arial',
+                                    font_size=20,
+                                    width=5)
+
     img_w_box = torchvision.transforms.ToPILImage()(img_w_box)
     return img_w_box
 
 
-@st.cache_resource
+#@st.cache_resource
 def load_model(path, device):
     torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
     model_ = torch.hub.load('ultralytics/yolov5', 'custom', path=path, force_reload=True)
@@ -211,7 +218,7 @@ def load_model(path, device):
     return model_
 
 
-@st.cache_resource
+#@st.cache_resource
 def download_model(url):
     model_file = wget.download(url, out="models")
     return model_file
@@ -270,7 +277,7 @@ def main():
     model = load_model(cfg_model_path, device_option)
 
     # confidence slider
-    confidence = st.sidebar.slider('Confidence', min_value=0.4, max_value=1.0, value=.4)
+    confidence = st.sidebar.slider('Confidence', min_value=0.4, max_value=1.0, value=.1)
 
     # custom classes
     if st.sidebar.checkbox("Custom Classes"):

@@ -13,7 +13,7 @@ st.set_page_config(layout="wide")
 cfg_safety_model_path = 'models/best_v8safety_openvino_model/'
 cfg_weapon_model_path = 'models/weaponv155spt100ep_openvino_model/'
 cfg_vehicle_person_model_path = 'models/dronev75spt100ep_openvino_model/'
-cfg_switch_model_path = 'models/best_v7switch_openvino_model/' #'models/best-v4-5s_openvino_model/'
+cfg_switch_model_path = 'models/coxial_openvino_model/' 
 
 model = None
 confidence = .25
@@ -178,11 +178,9 @@ def main():
     # global variables
     global model, confidence, cfg_vehicle_person_model_path, cfg_safety_model_path, cfg_switch_model_path, cfg_weapon_model_path, video_src, user_input
 
-    st.title("Multiple Models Detector")
+    st.title("Use Cases")
 
-    st.write("This page the user will be able to combine 2 or more models for detection on Uploaded videos, Rtsp, and Live webcam")
-
-    st.write("This page is still being implemented")
+    st.write("This page is still being implemented / Not fully functional")
 
     # st.sidebar.title("Settings")
 
@@ -192,97 +190,97 @@ def main():
     # else:
     #     device_option = st.sidebar.radio("Select Device", ['cpu', 'cuda'], disabled=True, index=0)
 
-    # with st.expander("Safety Detection"):
-    #     # load model
-    #     model = load_model(cfg_safety_model_path, None)
+    with st.expander("Safety Detection"):
+        # load model
+        model = load_model(cfg_safety_model_path, None)
 
-    #     # vid src option slider
-    #     #with st.sidebar:
-    #     video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_7") #"Sample data", 
+        # vid src option slider
+        #with st.sidebar:
+        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_7") #"Sample data", 
 
-    #     if video_type == "Live webcam":
-    #         video_input('Live data', cfg_vehicle_person_model_path, key="key_8")
-    #     # elif video_type == "Sample data":
-    #     #     video_input('Sample data')
-    #     elif video_type == "Upload a video":
-    #         video_input('Upload data', cfg_vehicle_person_model_path, key="key_9")
-    #     elif video_type == "Rtsp":
-    #         user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_29")
-    #         # video_src = user_input
-    #         if user_input:
-    #             video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_10")
+        if video_type == "Live webcam":
+            video_input('Live data', cfg_vehicle_person_model_path, key="key_8")
+        # elif video_type == "Sample data":
+        #     video_input('Sample data')
+        elif video_type == "Upload a video":
+            video_input('Upload data', cfg_vehicle_person_model_path, key="key_9")
+        elif video_type == "Rtsp":
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_29")
+            # video_src = user_input
+            if user_input:
+                video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_10")
                 
-    #     # confidence slider
-    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.65, key="key_24")
+        # confidence slider
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.65, key="key_24")
     
-    # with st.expander("Switch Detection"):
-    #     # load model
-    #     model = load_model(cfg_safety_model_path, None)
+    with st.expander("Coaxial Cable Detection"):
+        # load model
+        model = load_model(cfg_safety_model_path, None)
 
-    #     # vid src option slider
-    #     #with st.sidebar:
-    #     video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_11") #"Sample data", 
+        # vid src option slider
+        #with st.sidebar:
+        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_11") #"Sample data", 
 
-    #     if video_type == "Live webcam":
-    #         video_input('Live data', cfg_switch_model_path, key="key_12")
-    #     # elif video_type == "Sample data":
-    #     #     video_input('Sample data')
-    #     elif video_type == "Upload a video":
-    #         video_input('Upload data', cfg_switch_model_path, key="key_13")
-    #     elif video_type == "Rtsp":
-    #         user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_28")
-    #         # video_src = user_input
-    #         if user_input:
-    #             video_input('Rtsp data', cfg_switch_model_path, key="key_14")
+        if video_type == "Live webcam":
+            video_input('Live data', cfg_switch_model_path, key="key_12")
+        # elif video_type == "Sample data":
+        #     video_input('Sample data')
+        elif video_type == "Upload a video":
+            video_input('Upload data', cfg_switch_model_path, key="key_13")
+        elif video_type == "Rtsp":
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_28")
+            # video_src = user_input
+            if user_input:
+                video_input('Rtsp data', cfg_switch_model_path, key="key_14")
     
-    #     # confidence slider
-    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.1, key="key_25")
+        # confidence slider
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.1, key="key_25")
     
-    # with st.expander("Traffic Detection"): #with st.expander("Person Detection"):
-    #     # load model
-    #     model = load_model(cfg_vehicle_person_model_path, None)
+    with st.expander("Traffic Detection"): #with st.expander("Person Detection"):
+        # load model
+        model = load_model(cfg_vehicle_person_model_path, None)
 
-    #     # vid src option slider
-    #     #with st.sidebar:
-    #     video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_3") #"Sample data", 
+        # vid src option slider
+        #with st.sidebar:
+        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_3") #"Sample data", 
 
-    #     if video_type == "Live webcam":
-    #         video_input('Live data', cfg_vehicle_person_model_path, key="key_4")
-    #     # elif video_type == "Sample data":
-    #     #     video_input('Sample data')
-    #     elif video_type == "Upload a video":
-    #         video_input('Upload data', cfg_vehicle_person_model_path, key="key_5")
-    #     elif video_type == "Rtsp":
-    #         user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_30")
-    #         # video_src = user_input
-    #         if user_input:
-    #             video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_6")
+        if video_type == "Live webcam":
+            video_input('Live data', cfg_vehicle_person_model_path, key="key_4")
+        # elif video_type == "Sample data":
+        #     video_input('Sample data')
+        elif video_type == "Upload a video":
+            video_input('Upload data', cfg_vehicle_person_model_path, key="key_5")
+        elif video_type == "Rtsp":
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_30")
+            # video_src = user_input
+            if user_input:
+                video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_6")
         
-    #     # confidence slider
-    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.5, key="key_23")
+        # confidence slider
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.5, key="key_23")
 
-    # with st.expander("Weapon Detection"):
-    #     # load model
-    #     model = load_model(cfg_safety_model_path, None)
+    with st.expander("Weapon Detection"):
+        # load model
+        model = load_model(cfg_safety_model_path, None)
 
-    #     # vid src option slider
-    #     #with st.sidebar:
-    #     video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_15") #"Sample data", 
+        # vid src option slider
+        #with st.sidebar:
+        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_15") #"Sample data", 
 
-    #     if video_type == "Live webcam":
-    #         video_input('Live data', cfg_weapon_model_path, key="key_16")
-    #     # elif video_type == "Sample data":
-    #     #     video_input('Sample data')
-    #     elif video_type == "Upload a video":
-    #         video_input('Upload data', cfg_weapon_model_path, key="key_17")
-    #     elif video_type == "Rtsp":
-    #         user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_27")
-    #         # video_src = user_input
-    #         if user_input:
-    #             video_input('Rtsp data', cfg_weapon_model_path, key="key_18")
+        if video_type == "Live webcam":
+            video_input('Live data', cfg_weapon_model_path, key="key_16")
+        # elif video_type == "Sample data":
+        #     video_input('Sample data')
+        elif video_type == "Upload a video":
+            video_input('Upload data', cfg_weapon_model_path, key="key_17")
+        elif video_type == "Rtsp":
+            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_27")
+            # video_src = user_input
+            if user_input:
+                video_input('Rtsp data', cfg_weapon_model_path, key="key_18")
         
-    #     # confidence slider
-    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.5, key="key_26")
+        # confidence slider
+        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.5, key="key_26")
 
     # with st.expander("Vehicle Detection"):
     #     # load model
