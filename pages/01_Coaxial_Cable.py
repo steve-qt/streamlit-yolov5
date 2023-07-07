@@ -240,7 +240,7 @@ def main():
     # global variables
     global model, confidence, cfg_model_path, video_type, video_src, user_input
 
-    st.title("Coxial Cable Detector")
+    st.title("Coaxial Cable Detector")
 
     st.sidebar.title("Settings")
 
@@ -270,7 +270,7 @@ def main():
     model = load_model(cfg_model_path, device_option)
 
     # confidence slider
-    confidence = st.sidebar.slider('Confidence', min_value=0.4, max_value=1.0, value=.1)
+    confidence = st.sidebar.slider('Confidence', min_value=0.4, max_value=1.0, value=.4)
 
     # custom classes
     if st.sidebar.checkbox("Custom Classes"):
