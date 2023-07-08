@@ -34,7 +34,8 @@ st.markdown(
 
     ### LATEST UPDATES
         - New Pages:
-            Coaxial Cable
+            Coaxial Cable updated
+            Use Cases updated
             Intrusion
             Multiple Models
         - New Models:
