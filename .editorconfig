@@ -1,25 +1,25 @@
-[DEFAULT]
-ServerAliveInterval = 45
-Compression = yes
-CompressionLevel = 9
-ForwardX11 = yes
-
 [SAFETY]
-labels='no helmet','helmet','glass','vest'
-colors='red','blue','orange','green'
+labels='glasses','helmet','no-glasses','no-helmet','no-vest','vest'
+colors='green','green','red','red','red','green'
 
 [SWITCH]
 labels='PROPERLY','EMPTY','PROPERLY','EMPTY'
-colors='blue','red','blue','red'
+colors='green','red','green','red'
 
 [PERSON]
 labels='person'
 colors='blue'
 
 [WEAPON]
-labels='handgun','rifle','shotgun'
-colors='blue','green','red'
+labels='handgun','knife','rifle','shotgun'
+colors='blue','green','red','yellow'
 
 [COAXIAL]
 labels='CONNECTED','DISCONNECTED'
-colors='blue','red'
+colors='green','red'
+
+[TRAFFIC]
+labels='bus_black','bus_blue','bus_green','bus_orange','bus_red','bus_white','bus_yellow','car_black','car_blue', 'car_gray', 'car_green','car_orange', 'car_purple','car_red','car_white','car_yellow','person','truck_black', 'truck_blue','truck_gray','truck_green','truck_orange','truck_red', 'truck_white','truck_yellow','van_black','van_blue','van_gray','van_red','van_red','van_white'
+colors = 'green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green'
+
+

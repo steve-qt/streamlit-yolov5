@@ -7,8 +7,16 @@ import cv2
 import os
 import time
 import numpy as np
+import torchvision
+from torchvision.io import read_image
+from torchvision.utils import draw_bounding_boxes
+import torchvision.transforms as transforms
+import configparser
+import ast
+
 st.set_page_config(layout="wide")
 
+cfg_model_label = 'WEAPON'
 cfg_model_path = 'models/weaponv155spt100ep_openvino_model/'
 model = None
 confidence = .5
@@ -17,7 +25,7 @@ video_src = None
 user_input = None
 
 st.markdown(
-        """
+    """
         <style>
             [data-testid="stSidebarNav"] {
                 background-image: url(https://th.bing.com/th/id/R.1117c9dcb73e4226297f7967b5adadcc?rik=W1PFQJjMCQMG6Q&riu=http%3a%2f%2f4.bp.blogspot.com%2f_Q8UtAKpUjn8%2fS6Y4fgcd26I%2fAAAAAAAACLc%2fSMDUxiAziUc%2fs320%2fhcl_logo.png&ehk=zxggoALZcXYRYKpUhmYxX0kty9iJnuGvb8cwZuDytk8%3d&risl=&pid=ImgRaw&r=0);
@@ -29,8 +37,9 @@ st.markdown(
             }
         </style>
         """,
-        unsafe_allow_html=True,
-    )
+    unsafe_allow_html=True,
+)
+
 
 def image_input(data_src):
     img_file = None
@@ -69,12 +78,12 @@ def video_input(data_src, auto_replay):
     elif data_src == 'Rtsp data':
         vid_file = user_input
         st.write("You entered: ", user_input)
-    
+
     # video_src = vid_file
 
     if vid_file:
         if vid_file == "livewebcam":
-            vid_file = 0 #default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
+            vid_file = 0  # default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
         cap = cv2.VideoCapture(vid_file)
         video_src = cap
         custom_size = st.sidebar.checkbox("Custom frame size")
@@ -90,7 +99,7 @@ def video_input(data_src, auto_replay):
         fps = 0
         st1, st2, st3 = st.columns(3)
 
-        #COMMENT THIS OUT //--------------------
+        # COMMENT THIS OUT //--------------------
         with st1:
             st.markdown("## Height")
             st1_text = st.markdown(f"{height}")
@@ -100,7 +109,7 @@ def video_input(data_src, auto_replay):
         with st3:
             st.markdown("## FPS")
             st3_text = st.markdown(f"{fps}")
-        #COMMENT THIS OUT //--------------------
+        # COMMENT THIS OUT //--------------------
 
         st.markdown("---")
         output = st.empty()
@@ -130,11 +139,11 @@ def video_input(data_src, auto_replay):
             fps = 1 / (curr_time - prev_time)
             prev_time = curr_time
 
-            #COMMENT THIS OUT //--------------------
+            # COMMENT THIS OUT //--------------------
             st1_text.markdown(f"**{height}**")
             st2_text.markdown(f"**{width}**")
             st3_text.markdown(f"**{fps:.2f}**")
-            #COMMENT THIS OUT //--------------------
+            # COMMENT THIS OUT //--------------------
 
         cap.release()
 
@@ -143,7 +152,15 @@ def video_input(data_src, auto_replay):
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 for frame in frames:
                     output.image(frame)
-                    time.sleep(1/fps)
+                    time.sleep(1 / fps)
+
+
+def getClassInfo(class_num):
+    config = configparser.ConfigParser()
+    config.read(".editorconfig")
+    label = ast.literal_eval(config[cfg_model_label]['labels'])[class_num]
+    color = ast.literal_eval(config[cfg_model_label]['colors'])[class_num]
+    return label, color
 
 
 def infer_image(im, size=None):
@@ -153,10 +170,40 @@ def infer_image(im, size=None):
     model.agnostic = True  # NMS class-agnostic
     model.multi_label = False
     model.size = 640
+
     result = model(im, size=size) if size else model(im)
-    result.render()
-    image = Image.fromarray(result.ims[0])
-    return image
+    box_arr = []
+    colors = []
+    labels = []
+    for index, row in result.pandas().xyxy[0].iterrows():
+        # print(row['xmin'], row['ymin'], row['xmax'], row['ymax'], row['confidence'])
+        x1 = int(row['xmin'])
+        y1 = int(row['ymin'])
+        x2 = int(row['xmax'])
+        y2 = int(row['ymax'])
+        box_arr.append([x1, y1, x2, y2])
+
+        class_num = int(row['class'])
+        label, color = getClassInfo(class_num)
+        labels.append(label)
+        colors.append(color)
+
+    if not box_arr:
+        return im
+
+    image = Image.fromarray(im)
+    transform = transforms.Compose([transforms.PILToTensor()])
+    transformed_img = transform(image)
+    boxes = torch.tensor(box_arr, dtype=torch.float)
+    img_w_box = draw_bounding_boxes(transformed_img,
+                                    boxes,
+                                    colors=colors,
+                                    labels=labels,
+                                    #font='arial',
+                                    font_size=20,
+                                    width=5)
+    img_w_box = torchvision.transforms.ToPILImage()(img_w_box)
+    return img_w_box
 
 
 @st.cache_resource
@@ -192,6 +239,7 @@ def get_user_model():
 
     return model_file
 
+
 def main():
     # global variables
     global model, confidence, cfg_model_path, video_src, user_input
@@ -213,8 +261,8 @@ def main():
 
     # check if model file is available
     # if not os.path.isfile(cfg_model_path):
-        # st.warning(cfg_model_path)
-        # st.warning("Model file not available!!!, please added to the model folder.", icon="⚠️")
+    # st.warning(cfg_model_path)
+    # st.warning("Model file not available!!!, please added to the model folder.", icon="⚠️")
 
     # device options
     if torch.cuda.is_available():
@@ -266,6 +314,7 @@ def main():
     #     video_input(data_src)
 
     # video_input('Sample data')
+
 
 if __name__ == "__main__":
     try:

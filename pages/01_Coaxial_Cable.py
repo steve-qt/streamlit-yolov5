@@ -192,11 +192,13 @@ def infer_image(im, size=None):
         labels.append(label)
         colors.append(color)
 
+    if not box_arr:
+        return im
+
     image = Image.fromarray(im)
     transform = transforms.Compose([transforms.PILToTensor()])
     transformed_img = transform(image)
     boxes = torch.tensor(box_arr, dtype=torch.float)
-
     img_w_box = draw_bounding_boxes(transformed_img,
                                     boxes,
                                     colors=colors,
@@ -204,12 +206,10 @@ def infer_image(im, size=None):
                                     font='arial',
                                     font_size=20,
                                     width=5)
-
     img_w_box = torchvision.transforms.ToPILImage()(img_w_box)
     return img_w_box
 
 
-#@st.cache_resource
 def load_model(path, device):
     torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
     model_ = torch.hub.load('ultralytics/yolov5', 'custom', path=path, force_reload=True)
@@ -218,7 +218,6 @@ def load_model(path, device):
     return model_
 
 
-#@st.cache_resource
 def download_model(url):
     model_file = wget.download(url, out="models")
     return model_file
@@ -247,7 +246,7 @@ def main():
     # global variables
     global model, confidence, cfg_model_path, video_type, video_src, user_input
 
-    st.title("Coxial Cable Detector")
+    st.title("Coaxial Cable Detector")
 
     st.sidebar.title("Settings")
 
