@@ -7,22 +7,30 @@ import cv2
 import os
 import time
 import numpy as np
+import configparser
+import ast
+import torchvision
+from torchvision.io import read_image
+from torchvision.utils import draw_bounding_boxes
+import torchvision.transforms as transforms
+
 st.set_page_config(layout="wide")
 
-
-cfg_safety_model_path = 'models/best_v8safety_openvino_model/'
-cfg_weapon_model_path = 'models/weaponv155spt100ep_openvino_model/'
-cfg_vehicle_person_model_path = 'models/dronev75spt100ep_openvino_model/'
-cfg_switch_model_path = 'models/coxial_openvino_model/' 
-
-model = None
 confidence = .25
 video_type = None
 video_src = None
 user_input = None
+models = []
+indexes = []
+model_cfg_names = ['COAXIAL', 'SAFETY', 'TRAFFIC', 'WEAPON']
+model_names = ['coaxial', 'safety', 'traffic', 'weapon']
+model_paths = ['models/coaxial_openvino_model/',
+               'models/best_v8safety_openvino_model/',
+               'models/dronev75spt100ep_openvino_model/',
+               'models/weaponv155spt100ep_openvino_model/']
 
 st.markdown(
-        """
+    """
         <style>
             [data-testid="stSidebarNav"] {
                 background-image: url(https://th.bing.com/th/id/R.1117c9dcb73e4226297f7967b5adadcc?rik=W1PFQJjMCQMG6Q&riu=http%3a%2f%2f4.bp.blogspot.com%2f_Q8UtAKpUjn8%2fS6Y4fgcd26I%2fAAAAAAAACLc%2fSMDUxiAziUc%2fs320%2fhcl_logo.png&ehk=zxggoALZcXYRYKpUhmYxX0kty9iJnuGvb8cwZuDytk8%3d&risl=&pid=ImgRaw&r=0);
@@ -34,16 +42,17 @@ st.markdown(
             }
         </style>
         """,
-        unsafe_allow_html=True,
-    )
+    unsafe_allow_html=True,
+)
 
-def video_input(data_src, data_path, key):
+
+def video_input(data_src, key):
     vid_file = None
     # if data_path == cfg_vehicle_person_model_path:
     if data_src == 'Live data':
         vid_file = "livewebcam"
-    # elif data_src == 'Sample data':
-    #     vid_file = "data/sample_videos/5secallguns.mp4"
+    elif data_src == 'Sample data':
+        vid_file = "data/sample_videos/multimodel480.mp4"
     elif data_src == 'Upload data':
         vid_bytes = st.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'], key=key)
         if vid_bytes:
@@ -53,31 +62,14 @@ def video_input(data_src, data_path, key):
     elif data_src == 'Rtsp data':
         vid_file = user_input
         st.write("You entered: ", user_input)
-    # if data_path == cfg_safety_model_path:
-    #     if data_src == 'Live data':
-    #         vid_file = "livewebcam"
-    #     # elif data_src == 'Sample data':
-    #     #     vid_file = "data/sample_videos/5secallguns.mp4"
-    #     elif data_src == 'Upload data':
-    #         vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'], key=key)
-    #         if vid_bytes:
-    #             vid_file = vid_bytes.name.split('.')[-1]
-    #             with open(vid_file, 'wb') as out:
-    #                 out.write(vid_bytes.read())
-    #     elif data_src == 'Rtsp data':
-    #         vid_file = user_input
-    #         st.write("You entered: ", user_input)
-    
-    # video_src = vid_file
 
     if vid_file:
         if vid_file == "livewebcam":
-            vid_file = 0 #default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
+            vid_file = 0  # default webcam for windows machine, need to enable webcam for Linux Ubuntu VM [install virtual box extension pack]
         cap = cv2.VideoCapture(vid_file)
-        video_src = cap
+        # video_src = cap
+
         custom_size = st.checkbox("Custom frame size", key=key)
-        # confidence slider
-        # confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         if custom_size:
@@ -90,17 +82,17 @@ def video_input(data_src, data_path, key):
         fps = 0
         st1, st2, st3 = st.columns(3)
 
-        #COMMENT THIS OUT //--------------------
-        # with st1:
-            # st.markdown("## Height")
-            # st1_text = st.markdown(f"{height}")
-        # with st2:
-            # st.markdown("## Width")
-            # st2_text = st.markdown(f"{width}")
-        # with st3:
-            # st.markdown("## FPS")
-            # st3_text = st.markdown(f"{fps}")
-        #COMMENT THIS OUT //--------------------
+        # COMMENT THIS OUT //--------------------
+        with st1:
+            st.markdown("## Height")
+            st1_text = st.markdown(f"{height}")
+        with st2:
+            st.markdown("## Width")
+            st2_text = st.markdown(f"{width}")
+        with st3:
+            st.markdown("## FPS")
+            st3_text = st.markdown(f"{fps}")
+        # COMMENT THIS OUT //--------------------
 
         # st.markdown("---")
         output = st.empty()
@@ -119,26 +111,66 @@ def video_input(data_src, data_path, key):
             fps = 1 / (curr_time - prev_time)
             prev_time = curr_time
 
-            #COMMENT THIS OUT //--------------------
-            # st1_text.markdown(f"**{height}**")
-            # st2_text.markdown(f"**{width}**")
-            # st3_text.markdown(f"**{fps:.2f}**")
-            #COMMENT THIS OUT //--------------------
+            # COMMENT THIS OUT //--------------------
+            st1_text.markdown(f"**{height}**")
+            st2_text.markdown(f"**{width}**")
+            st3_text.markdown(f"**{fps:.2f}**")
+            # COMMENT THIS OUT //--------------------
 
         cap.release()
 
 
+def getClassInfo(class_cfg_name, class_num):
+    config = configparser.ConfigParser()
+    config.read(".editorconfig")
+    label = ast.literal_eval(config[class_cfg_name]['labels'])[class_num]
+    color = ast.literal_eval(config[class_cfg_name]['colors'])[class_num]
+    return label, color
+
+
 def infer_image(im, size=None):
-    model.conf = confidence
-    model.source = video_src
-    model.iou = 0.65
-    model.agnostic = True  # NMS class-agnostic
-    model.multi_label = False
-    model.size = 640
-    result = model(im, size=size) if size else model(im)
-    result.render()
-    image = Image.fromarray(result.ims[0])
-    return image
+    image = Image.fromarray(im)
+    transform = transforms.Compose([transforms.PILToTensor()])
+    transformed_img = transform(image)
+
+    for model_idx in indexes:
+        model = models[model_idx]
+        model.conf = confidence
+        model.source = video_src
+        model.iou = 0.65
+        model.agnostic = True  # NMS class-agnostic
+        model.multi_label = False
+        model.size = 640
+        result = model(im, size=size) if size else model(im)
+        box_arr = []
+        colors = []
+        labels = []
+        for index, row in result.pandas().xyxy[0].iterrows():
+            # print(row['xmin'], row['ymin'], row['xmax'], row['ymax'], row['confidence'])
+            x1 = int(row['xmin'])
+            y1 = int(row['ymin'])
+            x2 = int(row['xmax'])
+            y2 = int(row['ymax'])
+            box_arr.append([x1, y1, x2, y2])
+            class_cfg_name = model_cfg_names[model_idx]
+            class_num = int(row['class'])
+            label, color = getClassInfo(class_cfg_name, class_num)
+            labels.append(label)
+            colors.append(color)
+
+        if not box_arr:
+            continue
+
+        boxes = torch.tensor(box_arr, dtype=torch.float)
+        transformed_img = draw_bounding_boxes(transformed_img,
+                                              boxes,
+                                              colors=colors,
+                                              labels=labels,
+                                              font='arial',
+                                              font_size=20,
+                                              width=5)
+
+    return torchvision.transforms.ToPILImage()(transformed_img)
 
 
 @st.cache_resource
@@ -174,15 +206,19 @@ def get_user_model():
 
     return model_file
 
+
 def main():
     # global variables
-    global model, confidence, cfg_vehicle_person_model_path, cfg_safety_model_path, cfg_switch_model_path, cfg_weapon_model_path, video_src, user_input
+    global models, model_paths, model_names, indexes, confidence, video_src, user_input, video_type
 
-    st.title("Use Cases")
+    st.title("Multiple Models")
 
     st.write("This page is still being implemented / Not fully functional")
 
-    # st.sidebar.title("Settings")
+    # load models
+    for path in model_paths:
+        model = load_model(path, None)
+        models.append(model)
 
     # device options
     # if torch.cuda.is_available():
@@ -190,124 +226,36 @@ def main():
     # else:
     #     device_option = st.sidebar.radio("Select Device", ['cpu', 'cuda'], disabled=True, index=0)
 
-    with st.expander("Safety Detection"):
-        # load model
-        model = load_model(cfg_safety_model_path, None)
+    # vid src option slider
+    # with st.sidebar:
 
-        # vid src option slider
-        #with st.sidebar:
-        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_7") #"Sample data", 
+    options = st.multiselect(
+        'What are your choice of models',
+        model_names)
 
+    for option in options:
+        # st.write('Index:', model_names.index(option))
+        indexes.append(model_names.index(option))
+
+    video_type = st.radio("Choose your video type", ["Sample data", "Upload a video", "Rtsp", "Live webcam"],
+                          key="key_11")  # "Sample data",
+
+    # confidence slider
+    confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.5, key="key_25")
+
+    if st.button('Load the models'):
         if video_type == "Live webcam":
-            video_input('Live data', cfg_vehicle_person_model_path, key="key_8")
-        # elif video_type == "Sample data":
-        #     video_input('Sample data')
+            video_input('Live data', key="key_12")
+        elif video_type == "Sample data":
+            video_input('Sample data', key="key_22")
         elif video_type == "Upload a video":
-            video_input('Upload data', cfg_vehicle_person_model_path, key="key_9")
-        elif video_type == "Rtsp":
-            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_29")
-            # video_src = user_input
-            if user_input:
-                video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_10")
-                
-        # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.65, key="key_24")
-    
-    with st.expander("Coaxial Cable Detection"):
-        # load model
-        model = load_model(cfg_safety_model_path, None)
-
-        # vid src option slider
-        #with st.sidebar:
-        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_11") #"Sample data", 
-
-        if video_type == "Live webcam":
-            video_input('Live data', cfg_switch_model_path, key="key_12")
-        # elif video_type == "Sample data":
-        #     video_input('Sample data')
-        elif video_type == "Upload a video":
-            video_input('Upload data', cfg_switch_model_path, key="key_13")
+            video_input('Upload data', key="key_13")
         elif video_type == "Rtsp":
             user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_28")
             # video_src = user_input
             if user_input:
-                video_input('Rtsp data', cfg_switch_model_path, key="key_14")
-    
-        # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.1, key="key_25")
-    
-    with st.expander("Traffic Detection"): #with st.expander("Person Detection"):
-        # load model
-        model = load_model(cfg_vehicle_person_model_path, None)
+                video_input('Rtsp data', key="key_14")
 
-        # vid src option slider
-        #with st.sidebar:
-        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_3") #"Sample data", 
-
-        if video_type == "Live webcam":
-            video_input('Live data', cfg_vehicle_person_model_path, key="key_4")
-        # elif video_type == "Sample data":
-        #     video_input('Sample data')
-        elif video_type == "Upload a video":
-            video_input('Upload data', cfg_vehicle_person_model_path, key="key_5")
-        elif video_type == "Rtsp":
-            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_30")
-            # video_src = user_input
-            if user_input:
-                video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_6")
-        
-        # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.5, key="key_23")
-
-    with st.expander("Weapon Detection"):
-        # load model
-        model = load_model(cfg_safety_model_path, None)
-
-        # vid src option slider
-        #with st.sidebar:
-        video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_15") #"Sample data", 
-
-        if video_type == "Live webcam":
-            video_input('Live data', cfg_weapon_model_path, key="key_16")
-        # elif video_type == "Sample data":
-        #     video_input('Sample data')
-        elif video_type == "Upload a video":
-            video_input('Upload data', cfg_weapon_model_path, key="key_17")
-        elif video_type == "Rtsp":
-            user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_27")
-            # video_src = user_input
-            if user_input:
-                video_input('Rtsp data', cfg_weapon_model_path, key="key_18")
-        
-        # confidence slider
-        confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.5, key="key_26")
-
-    # with st.expander("Vehicle Detection"):
-    #     # load model
-    #     model = load_model(cfg_safety_model_path, None)
-
-    #     # vid src option slider
-    #     #with st.sidebar:
-    #     video_type = st.radio("Choose your video type", ["Upload a video", "Rtsp", "Live webcam"], key="key_19") #"Sample data", 
-
-    #     if video_type == "Live webcam":
-    #         video_input('Live data', cfg_vehicle_person_model_path, key="key_20")
-    #     # elif video_type == "Sample data":
-    #     #     video_input('Sample data')
-    #     elif video_type == "Upload a video":
-    #         video_input('Upload data', cfg_vehicle_person_model_path, key="key_21")
-    #     elif video_type == "Rtsp":
-    #         user_input = st.text_input("Enter the rtsp address ( rtsp://address )", key="key_31")
-    #         # video_src = user_input
-    #         if user_input:
-    #             video_input('Rtsp data', cfg_vehicle_person_model_path, key="key_22")
-
-    #     # confidence slider
-    #     confidence = st.slider('Confidence', min_value=0.1, max_value=1.0, value=.45, key="key_27")
-
-    #st.sidebar.markdown("---")
-
-    
 
 if __name__ == "__main__":
     try:
