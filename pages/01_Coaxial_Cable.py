@@ -17,7 +17,7 @@ import ast
 st.set_page_config(layout="wide")
 
 cfg_model_label = 'COAXIAL'
-cfg_model_path = 'models/coxial_openvino_model/'
+cfg_model_path = 'models/coaxial_openvino_model/'
 model = None
 confidence = .4
 video_type = None
